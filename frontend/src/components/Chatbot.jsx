@@ -3,6 +3,8 @@ import axios from 'axios';
 import { FiMessageSquare, FiX, FiSend } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -34,7 +36,7 @@ export default function Chatbot() {
     try {
       // Send the current message and the previous conversation history
       const history = messages.map(msg => ({ role: msg.isBot ? 'assistant' : 'user', content: msg.text }));
-      const res = await axios.post('http://localhost:5000/api/chat', { 
+      const res = await axios.post(`${API_URL}/api/chat`, {
         message: userText,
         history: history
       });

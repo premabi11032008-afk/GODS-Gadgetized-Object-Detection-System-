@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, Response, session
 from flask_cors import CORS
 import cv2
 import threading
+import time
 from dotenv import load_dotenv
 from groq import Groq
 from driving_safety import detect_objects, draw_detections, detect_lanes, check_hazards
@@ -11,6 +12,12 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "super-secret-key-change-me")
+
+# Required for cross-domain cookies (Vercel frontend -> Backend)
+app.config.update(
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True
+)
 
 # Allow requests from frontend and allow credentials (cookies)
 CORS(app, supports_credentials=True)
@@ -27,53 +34,90 @@ global_hazard_state = {
 }
 
 # Initialize the webcam
-current_camera_source = 0
-camera = cv2.VideoCapture(current_camera_source)
+webcam_ip = os.getenv("WEBCAM_IP", "0")
+camera_source = int(webcam_ip) if webcam_ip.isdigit() else webcam_ip
+camera = cv2.VideoCapture(camera_source)
 camera_rotation = 0
 lock = threading.Lock()
 
+# Shared state
+latest_detections = None
+latest_lane = None
+latest_metadata = {}
+frame_lock = threading.Lock()
+
+# Performance configs
+TARGET_FPS = 10
+DETECTION_INTERVAL = 3   # run detection every N frames
+FRAME_SIZE = (320, 240) # reduce resolution
+JPEG_QUALITY = 50
+
+frame_count = 0
+
+
 def generate_frames():
-    global global_hazard_state, camera_rotation
-    """Generator function that reads frames from the camera, processes them, and yields them."""
+    global latest_detections, latest_lane, latest_metadata, frame_count, global_hazard_state
+
+    last_time = 0
+
     while True:
+        current_time = time.time()
+        if current_time - last_time < 1 / TARGET_FPS:
+            continue
+        last_time = current_time
+
         success, frame = camera.read()
         if not success:
             break
-        
-        # Apply manual rotation if set
+
+        # 🔄 Rotate if needed
         if camera_rotation == 90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         elif camera_rotation == 180:
             frame = cv2.rotate(frame, cv2.ROTATE_180)
         elif camera_rotation == 270:
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
-            
-        # Resize frame to avoid heavy processing & bandwidth issues
-        frame = cv2.resize(frame, (640, 480))
-        
-        # -- 1. Object Detection --
-        detections = detect_objects(frame)
-        frame = draw_detections(frame, detections)
-        
-        # -- 2. Lane Detection --
-        frame, lane_detected = detect_lanes(frame)
-        
-        # -- 3. Hazard Logic & Alerts --
-        frame, hazard, metadata = check_hazards(frame, detections, lane_detected)
-        global_hazard_state = {
-            "hazard": hazard,
-            "distance": metadata.get("distance"),
-            "risk_score": metadata.get("risk_score"),
-            "latest_log": metadata.get("log")
-        }
-        
-        # Encode the frame in JPEG format
-        ret, buffer = cv2.imencode('.jpg', frame)
+
+        # 📉 Resize for speed
+        frame = cv2.resize(frame, FRAME_SIZE)
+
+        frame_count += 1
+
+        # 🧠 Run heavy detection only every N frames
+        if frame_count % DETECTION_INTERVAL == 0:
+            detections = detect_objects(frame)
+            frame, lane_detected = detect_lanes(frame)
+            frame, hazard, metadata = check_hazards(frame, detections, lane_detected)
+
+            # Cache results
+            with frame_lock:
+                latest_detections = detections
+                latest_lane = lane_detected
+                latest_metadata = metadata
+
+                global_hazard_state = {
+                    "hazard": hazard,
+                    "distance": metadata.get("distance"),
+                    "risk_score": metadata.get("risk_score"),
+                    "latest_log": metadata.get("log")
+                }
+
+        else:
+            # 🧩 Use cached results (fast path)
+            with frame_lock:
+                if latest_detections is not None:
+                    frame = draw_detections(frame, latest_detections)
+
+        # 🖼 Encode with lower quality
+        ret, buffer = cv2.imencode(
+            '.jpg', frame,
+            [int(cv2.IMWRITE_JPEG_QUALITY), JPEG_QUALITY]
+        )
         frame_bytes = buffer.tobytes()
-        
-        # Yield the output frame in the byte format required for multipart streaming
+
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' +
+               frame_bytes + b'\r\n')
 
 
 @app.route('/api/login', methods=['POST'])
@@ -110,22 +154,7 @@ def hazard():
     global global_hazard_state
     return jsonify(global_hazard_state)
 
-@app.route('/api/set_camera', methods=['POST'])
-def set_camera():
-    global camera, current_camera_source
-    data = request.get_json()
-    source = data.get('source', 0)
-    
-    if str(source).isdigit():
-        source = int(source)
-        
-    if current_camera_source != source:
-        current_camera_source = source
-        if camera:
-            camera.release()
-        camera = cv2.VideoCapture(source)
-        return jsonify({"success": True, "message": f"Camera source updated to {source}"})
-    return jsonify({"success": True, "message": "Camera source already active"})
+
 
 @app.route('/api/rotate', methods=['POST'])
 def rotate_camera():

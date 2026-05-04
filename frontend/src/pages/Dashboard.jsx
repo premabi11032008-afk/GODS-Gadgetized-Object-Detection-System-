@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [hazardWarning, setHazardWarning] = useState(null);
@@ -11,7 +13,6 @@ export default function Dashboard() {
 
   // New states for feature additions
   const [mode, setMode] = useState('analysis'); // 'analysis' or 'drive'
-  const [cameraInput, setCameraInput] = useState('0');
   const [videoKey, setVideoKey] = useState(Date.now());
   
   const [hazardData, setHazardData] = useState({
@@ -25,7 +26,7 @@ export default function Dashboard() {
     // Check auth status
     const checkAuth = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/status', { withCredentials: true });
+        const res = await axios.get(`${API_URL}/api/status`, { withCredentials: true });
         if (!res.data.logged_in) {
           navigate('/login');
         }
@@ -47,7 +48,7 @@ export default function Dashboard() {
       if (showHazardPopup) return;
       
       try {
-        const res = await axios.get('http://localhost:5000/api/hazard');
+        const res = await axios.get(`${API_URL}/api/hazard`);
         const data = res.data;
         
         setHazardData({
@@ -100,30 +101,19 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:5000/api/logout', {}, { withCredentials: true });
+      await axios.post(`${API_URL}/api/logout`, {}, { withCredentials: true });
       navigate('/');
     } catch (err) {
       console.error("Logout failed");
     }
   };
 
-  const handleCameraChange = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('http://localhost:5000/api/set_camera', { source: cameraInput });
-      // clear logs on camera change
-      setActivityLogs([]);
-      // force reload video stream
-      setVideoKey(Date.now());
-    } catch (err) {
-      console.error("Failed to change camera", err);
-    }
-  };
+
 
   const handleRotate = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/rotate');
+      await axios.post(`${API_URL}/api/rotate`);
       setVideoKey(Date.now());
     } catch (err) {
       console.error("Failed to rotate camera", err);
@@ -198,18 +188,7 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center gap-4">
-            <form onSubmit={handleCameraChange} className="flex gap-2">
-              <input 
-                type="text" 
-                value={cameraInput}
-                onChange={(e) => setCameraInput(e.target.value)}
-                placeholder="Camera URL or '0'"
-                className="bg-black/50 border border-white/10 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-primary w-48"
-              />
-              <button type="submit" className="px-4 py-2 bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30 rounded-full text-sm font-semibold transition-colors">
-                Connect
-              </button>
-            </form>
+
             <button 
               onClick={handleRotate}
               className="px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:text-white transition-all text-sm font-semibold tracking-wide backdrop-blur-md flex items-center gap-2"
@@ -319,7 +298,7 @@ export default function Dashboard() {
 
             {/* The video stream from Flask */}
             <img 
-              src={`http://localhost:5000/video_feed?k=${videoKey}`}
+              src={`${API_URL}/video_feed?k=${videoKey}`}
               alt="Live Video Stream" 
               className={`w-full h-full object-cover filter ${isDriveMode ? 'contrast-125 brightness-100' : 'contrast-125 brightness-110'}`}
             />
