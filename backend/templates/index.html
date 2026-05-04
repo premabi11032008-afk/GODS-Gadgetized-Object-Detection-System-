@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeDrive AI | Indian Roads Safety System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --accent: #f43f5e;
+            --bg-base: #020617;
+            --bg-surface: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 5%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(2, 6, 23, 0) 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 900px;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Problem Statement Section */
+        .problem-statement {
+            padding: 100px 5%;
+            background-color: var(--bg-surface);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .problem-text h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .problem-text p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px;
+            border-radius: 16px;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Live Demo Dashboard */
+        .demo-section {
+            padding: 100px 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .demo-section h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .demo-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .dashboard {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 1000px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 480px;
+        }
+
+        .video-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Scanning overlay effect */
+        .video-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10%;
+            background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.2));
+            animation: scan 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .telemetry {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .status-live {
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-green 1.5s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .problem-statement { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 3rem; }
+            .video-container { min-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">SafeDrive AI</div>
+        <div class="nav-links">
+            <a href="#problem">The Problem</a>
+            <a href="#demo">Live Demo</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Enhancing Driving Safety on Indian Roads</h1>
+        <p>A next-generation AI system that monitors road conditions, detects potential hazards, and provides real-time alerts tailored for diverse and unpredictable traffic patterns.</p>
+        <a href="#demo" class="btn btn-primary">Launch Live Dashboard</a>
+    </section>
+
+    <section class="problem-statement" id="problem">
+        <div class="problem-text">
+            <h2>The Challenge</h2>
+            <p>Indian driving environments are exceptionally diverse, characterized by chaotic traffic patterns, dynamic road types, and unique hazards that conventional safety systems often fail to address.</p>
+            <p>We've developed an intelligent computer vision system specifically designed to handle these complexities, ensuring driver safety through continuous environmental monitoring and instant alerts.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Hazard Detection</h3>
+                <p>Identifies multi-class objects including diverse vehicles, pedestrians, and localized hazards.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Lane Monitoring</h3>
+                <p>Advanced edge-detection to track lane departures even on poorly marked roads.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Real-Time Alerts</h3>
+                <p>Zero-latency visual warnings when objects approach dangerously close.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Lightweight Core</h3>
+                <p>Powered by YOLOv8 Nano, providing high precision inference entirely on local CPU hardware.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section" id="demo">
+        <h2>Telemetry & Live Feed</h2>
+        <p class="demo-subtitle">Real-time object mapping and hazard analysis powered by OpenCV and PyTorch.</p>
+        
+        <div class="dashboard">
+            <div class="video-container">
+                <!-- Flask Video Stream -->
+                <img src="{{ url_for('video_feed') }}" alt="Live AI Video Stream">
+            </div>
+            
+            <div class="telemetry">
+                <div class="stat-card">
+                    <div class="stat-label">
+                        System Status
+                        <span class="status-live"><div class="pulse-dot"></div> ACTIVE</span>
+                    </div>
+                    <div class="stat-value" style="color: var(--text-main)">Monitoring...</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Neural Engine</div>
+                    <div class="stat-value" style="color: var(--primary)">YOLOv8n</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Processing Backend</div>
+                    <div class="stat-value" style="color: var(--secondary)">Flask + OpenCV</div>
+                </div>
+                
+                <div class="stat-card" style="border-color: rgba(244, 63, 94, 0.3);">
+                    <div class="stat-label">Active Hazards Tracked</div>
+                    <div class="stat-value" style="color: var(--accent); font-size: 1.2rem;">
+                        Proximity & Lane Dep.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 AI Driving Safety Prototype. Built for robust environments.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
