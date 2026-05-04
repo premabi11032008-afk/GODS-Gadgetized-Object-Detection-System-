@@ -2,6 +2,11 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
+import torch
+import ultralytics.nn.tasks
+if hasattr(torch.serialization, 'add_safe_globals'):
+    torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
+
 # 1. Initialization
 # Load YOLOv8 nano model (lightweight, runs fast on CPU)
 model = YOLO('yolov8n.pt') 
