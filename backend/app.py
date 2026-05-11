@@ -34,7 +34,7 @@ global_hazard_state = {
 }
 camera_rotation = 0
 lock = threading.Lock()
-CAMERA_SOURCE = 1
+CAMERA_SOURCE = 0
 
 # Shared state
 latest_detections = None
