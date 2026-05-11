@@ -132,8 +132,8 @@ def check_hazards(frame, detections, lane_detected):
             min_distance = distance
             latest_log = f"{det['class'].capitalize()} detected at ~{distance:.1f}m (Risk: {risk_score})"
         
-        # Hazard condition: Risk score > 85 (less sensitive)
-        if risk_score > 85:
+        # Hazard condition: Risk score > 60 (more sensitive)
+        if risk_score > 60:
             hazard_warning = True
             
     if hazard_warning:

@@ -91,7 +91,7 @@ export default function Dashboard() {
     };
 
     if (!loading) {
-      intervalId = setInterval(checkHazard, 1000);
+      intervalId = setInterval(checkHazard, 3000); // Polling every 3 seconds to reduce API spam
     }
 
     return () => {

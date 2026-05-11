@@ -32,13 +32,9 @@ global_hazard_state = {
     "risk_score": 0,
     "latest_log": "System initialized. Awaiting feed..."
 }
-
-# Initialize the webcam
-webcam_ip = os.getenv("WEBCAM_IP", "0")
-camera_source = int(webcam_ip) if webcam_ip.isdigit() else webcam_ip
-camera = cv2.VideoCapture(camera_source)
 camera_rotation = 0
 lock = threading.Lock()
+CAMERA_SOURCE = 1
 
 # Shared state
 latest_detections = None
@@ -48,8 +44,8 @@ frame_lock = threading.Lock()
 
 # Performance configs
 TARGET_FPS = 10
-DETECTION_INTERVAL = 3   # run detection every N frames
-FRAME_SIZE = (320, 240) # reduce resolution
+DETECTION_INTERVAL = 1 
+FRAME_SIZE = (320, 320)
 JPEG_QUALITY = 50
 
 frame_count = 0
@@ -59,6 +55,16 @@ def generate_frames():
     global latest_detections, latest_lane, latest_metadata, frame_count, global_hazard_state
 
     last_time = 0
+    camera = cv2.VideoCapture(CAMERA_SOURCE)
+
+    if not camera.isOpened():
+        global_hazard_state = {
+            "hazard": False,
+            "distance": None,
+            "risk_score": 0,
+            "latest_log": f"Failed to open camera source: {CAMERA_SOURCE}"
+        }
+        return
 
     while True:
         current_time = time.time()
@@ -67,8 +73,16 @@ def generate_frames():
         last_time = current_time
 
         success, frame = camera.read()
-        if not success:
-            break
+        if not success or frame is None:
+            with frame_lock:
+                global_hazard_state = {
+                    "hazard": False,
+                    "distance": None,
+                    "risk_score": 0,
+                    "latest_log": "Camera opened, but no frame could be read."
+                }
+            time.sleep(0.2)
+            continue
 
         # 🔄 Rotate if needed
         if camera_rotation == 90:
@@ -78,8 +92,6 @@ def generate_frames():
         elif camera_rotation == 270:
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-        # 📉 Resize for speed
-        frame = cv2.resize(frame, FRAME_SIZE)
 
         frame_count += 1
 
