@@ -1,0 +1,13 @@
+path: c:/Users/HAPPY/NEW PROJECTS/DT PROJECTS/DT PROJECT  2/dataset
+train: train/images
+val: valid/images
+test: test/images
+nc: 8
+names: ['alligator cracking', 'edge cracking', 'longitudinal cracking', 'manhole', 'patching', 'pothole', 'rutting', 'transverse cracking']
+
+roboflow:
+  workspace: prem-r-s
+  project: road-damage-detection-i40w8-wpufy
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/prem-r-s/road-damage-detection-i40w8-wpufy/dataset/1

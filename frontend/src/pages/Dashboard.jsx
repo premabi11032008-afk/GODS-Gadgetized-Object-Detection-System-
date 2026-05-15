@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import PotholeMap from '../components/PotholeMap';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -211,22 +212,22 @@ export default function Dashboard() {
         <div className="bg-black/40 p-1 rounded-full backdrop-blur-md border border-white/10 inline-flex shadow-lg">
           <button 
             onClick={() => setMode('analysis')}
-            className={`px-6 py-2 rounded-full text-sm font-bold tracking-wide transition-all ${!isDriveMode ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
+            className={`px-6 py-2 rounded-full text-sm font-bold tracking-wide transition-all ${mode === 'analysis' ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
           >
             ANALYSIS MODE
           </button>
           <button 
             onClick={() => setMode('drive')}
-            className={`px-6 py-2 rounded-full text-sm font-bold tracking-wide transition-all ${isDriveMode ? 'bg-accent text-black shadow-[0_0_15px_rgba(244,63,94,0.5)]' : 'text-gray-400 hover:text-white'}`}
+            className={`px-6 py-2 rounded-full text-sm font-bold tracking-wide transition-all ${mode === 'drive' ? 'bg-accent text-black shadow-[0_0_15px_rgba(244,63,94,0.5)]' : 'text-gray-400 hover:text-white'}`}
           >
             DRIVE MODE
           </button>
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 ${isDriveMode ? 'xl:grid-cols-1 flex-grow' : 'xl:grid-cols-4'} gap-8 relative z-10 ${isDriveMode ? 'h-full pb-8' : ''}`}>
+      <div className={`grid grid-cols-1 ${isDriveMode ? 'xl:grid-cols-1 flex-grow' : 'xl:grid-cols-4'} gap-8 relative z-10 ${isDriveMode ? 'h-full pb-8 flex-grow' : ''}`}>
         
-        {/* Main Video Feed Area */}
+        {/* Main Video Feed Area & Map */}
         <div className={`col-span-1 ${isDriveMode ? 'xl:col-span-1 h-full' : 'xl:col-span-3'} flex flex-col gap-6`}>
           <div className={`relative rounded-3xl overflow-hidden bg-black flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.8)] border ${isDriveMode ? 'border-accent/30 flex-grow' : 'border-white/10 aspect-video'} group`}>
             
@@ -338,10 +339,17 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
+          {/* Map Area under Video Feed in Analysis Mode */}
+          {mode === 'analysis' && (
+            <div className="h-96 w-full mt-4">
+               <PotholeMap />
+            </div>
+          )}
         </div>
 
         {/* Right Side Panel - Hidden in Drive Mode */}
-        {!isDriveMode && (
+        {mode === 'analysis' && (
           <div className="col-span-1 flex flex-col gap-6">
             {/* Status Widget */}
             <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
