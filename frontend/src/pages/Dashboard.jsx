@@ -15,6 +15,7 @@ export default function Dashboard() {
   // New states for feature additions
   const [mode, setMode] = useState('analysis'); // 'analysis' or 'drive'
   const [videoKey, setVideoKey] = useState(Date.now());
+  const lastPotholeReportedAt = useRef(0);
   
   const [hazardData, setHazardData] = useState({
     distance: null,
@@ -57,6 +58,33 @@ export default function Dashboard() {
           risk_score: data.risk_score,
           latest_log: data.latest_log
         });
+
+        // 🚨 Pothole Reporting Logic 🚨
+        if (data.pothole_detected) {
+          const now = Date.now();
+          // 15 second cooldown so we don't spam the CSV for the same pothole
+          if (now - lastPotholeReportedAt.current > 15000) {
+            lastPotholeReportedAt.current = now;
+            
+            if ("geolocation" in navigator) {
+              navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                  try {
+                    await axios.post(`${API_URL}/api/potholes`, {
+                      lat: position.coords.latitude,
+                      lng: position.coords.longitude
+                    });
+                    console.log("Pothole reported to backend CSV!");
+                  } catch (e) {
+                    console.error("Failed to post pothole", e);
+                  }
+                },
+                (error) => console.error("Error getting location", error),
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+              );
+            }
+          }
+        }
 
         setActivityLogs(prev => {
           if (!data.latest_log) return prev;

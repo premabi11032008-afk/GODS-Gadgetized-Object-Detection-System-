@@ -1,3 +1,4 @@
+import os
 import cv2
 from ultralytics import YOLO
 import torch
@@ -6,13 +7,18 @@ import ultralytics.nn.tasks
 if hasattr(torch.serialization, 'add_safe_globals'):
     torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
 
-# Load YOLOv8 nano model (lightweight, runs fast on CPU)
-model = YOLO('yolov8n.pt') 
+# Load custom YOLOv8 model for road damage
+# Fallback to yolov8n.pt if training is not completely finished yet
+model_path = r'c:\Users\HAPPY\NEW PROJECTS\DT PROJECTS\DT PROJECT  2\runs\detect\road_damage_v1\weights\best.pt'
+if not os.path.exists(model_path):
+    model_path = 'yolov8s.pt' # Training uses 8s, so fallback to generic 8s
 
-# Define relevant COCO classes for Indian roads:
-# 0: person, 1: bicycle, 2: car, 3: motorcycle, 5: bus, 7: truck
-# 9: traffic light, 16: dog, 17: horse, 19: cow
-RELEVANT_CLASSES = [0, 1, 2, 3, 5, 7, 9, 16, 17, 19]
+model = YOLO(model_path) 
+
+# All road damage classes from our trained dataset
+# 0: alligator cracking, 1: edge cracking, 2: longitudinal cracking
+# 3: manhole, 4: patching, 5: pothole, 6: rutting, 7: transverse cracking
+RELEVANT_CLASSES = [0, 1, 2, 3, 4, 5, 6, 7]
 
 def detect_objects(frame):
     """

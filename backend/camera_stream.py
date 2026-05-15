@@ -11,7 +11,8 @@ global_hazard_state = {
     "hazard": False,
     "distance": None,
     "risk_score": 0,
-    "latest_log": "System initialized. Awaiting feed..."
+    "latest_log": "System initialized. Awaiting feed...",
+    "pothole_detected": False
 }
 latest_detections = None
 latest_lane = None
@@ -88,7 +89,8 @@ def generate_frames():
                     "hazard": hazard,
                     "distance": metadata.get("distance"),
                     "risk_score": metadata.get("risk_score"),
-                    "latest_log": metadata.get("log")
+                    "latest_log": metadata.get("log"),
+                    "pothole_detected": metadata.get("pothole_detected", False)
                 }
 
         else:

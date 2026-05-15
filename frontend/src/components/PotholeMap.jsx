@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
+import axios from 'axios';
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -58,30 +59,35 @@ function LiveLocationMarker() {
 export default function PotholeMap() {
   const [potholes, setPotholes] = useState([]);
   const defaultCenter = [11.0168, 76.9558]; // Default to Coimbatore, Tamil Nadu
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const fetchPotholes = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/potholes`);
+      if (res.data.success) {
+        setPotholes(res.data.potholes);
+      }
+    } catch (e) {
+      console.error("Failed to fetch potholes", e);
+    }
+  };
 
   useEffect(() => {
-    // Load potholes from local storage or use some initial dummy data
-    const savedPotholes = localStorage.getItem('pothole_data_v2');
-    if (savedPotholes) {
-      setPotholes(JSON.parse(savedPotholes));
-    } else {
-      const initialPotholes = [
-        { id: 1, lat: 11.0168, lng: 76.9558, status: 'active', reportedAt: new Date().toISOString() },
-        { id: 2, lat: 11.0268, lng: 76.9658, status: 'active', reportedAt: new Date().toISOString() },
-        { id: 3, lat: 11.0068, lng: 76.9458, status: 'active', reportedAt: new Date().toISOString() },
-        { id: 4, lat: 11.0188, lng: 76.9578, status: 'active', reportedAt: new Date().toISOString() },
-        { id: 5, lat: 11.0128, lng: 76.9508, status: 'active', reportedAt: new Date().toISOString() },
-      ];
-      setPotholes(initialPotholes);
-      localStorage.setItem('pothole_data_v2', JSON.stringify(initialPotholes));
-    }
+    fetchPotholes(); // Initial fetch
+    
+    // Poll for new potholes from the backend
+    const interval = setInterval(fetchPotholes, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const markAsFixed = (id) => {
-    // Completely remove the pothole from the list once fixed
-    const updatedPotholes = potholes.filter(p => p.id !== id);
-    setPotholes(updatedPotholes);
-    localStorage.setItem('pothole_data_v2', JSON.stringify(updatedPotholes));
+  const markAsFixed = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/api/potholes/${id}`);
+      // Optimistically update the UI
+      setPotholes(prev => prev.filter(p => p.id !== id));
+    } catch (e) {
+      console.error("Failed to delete pothole", e);
+    }
   };
 
   return (

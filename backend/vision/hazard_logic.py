@@ -8,12 +8,17 @@ def check_hazards(frame, detections, lane_detected):
     """
     height, width = frame.shape[:2]
     hazard_warning = False
+    pothole_detected = False
     min_distance = 999.0
     max_risk_score = 0
     latest_log = "Scan active. No immediate hazards detected."
     
     # 1. Check for objects too close
     for det in detections:
+        # Check if the object is specifically a pothole
+        if det['class'].lower() == 'pothole':
+            pothole_detected = True
+
         x1, y1, x2, y2 = det['box']
         box_width = x2 - x1
         box_height = y2 - y1
@@ -56,6 +61,7 @@ def check_hazards(frame, detections, lane_detected):
     metadata = {
         'distance': round(min_distance, 1) if min_distance != 999.0 else None,
         'risk_score': max_risk_score,
-        'log': latest_log
+        'log': latest_log,
+        'pothole_detected': pothole_detected
     }
     return frame, hazard_warning, metadata
