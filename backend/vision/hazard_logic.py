@@ -12,6 +12,7 @@ def check_hazards(frame, detections, lane_detected):
     min_distance = 999.0
     max_risk_score = 0
     latest_log = "Scan active. No immediate hazards detected."
+    max_risk_class = None
     
     # 1. Check for objects too close
     for det in detections:
@@ -44,13 +45,23 @@ def check_hazards(frame, detections, lane_detected):
             max_risk_score = risk_score
             min_distance = distance
             latest_log = f"{det['class'].capitalize()} detected at ~{distance:.1f}m (Risk: {risk_score})"
+            max_risk_class = det['class'].lower()
         
         # Hazard condition: Risk score > 60 (more sensitive)
         if risk_score > 60:
             hazard_warning = True
             
+    hazard_action = None
+    if hazard_warning and max_risk_class:
+        collision_classes = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck']
+        if max_risk_class in collision_classes:
+            hazard_action = "hit_brake"
+        else:
+            hazard_action = "slow_down"
+
     if hazard_warning:
-        cv2.putText(frame, "WARNING: OBJECT TOO CLOSE!", (30, 80), 
+        warning_text = "WARNING: OBJECT TOO CLOSE!" if hazard_action == "hit_brake" else "WARNING: ROAD DAMAGE AHEAD!"
+        cv2.putText(frame, warning_text, (30, 80), 
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
                     
     # 2. Check for lane departure
@@ -62,6 +73,7 @@ def check_hazards(frame, detections, lane_detected):
         'distance': round(min_distance, 1) if min_distance != 999.0 else None,
         'risk_score': max_risk_score,
         'log': latest_log,
-        'pothole_detected': pothole_detected
+        'pothole_detected': pothole_detected,
+        'hazard_action': hazard_action
     }
     return frame, hazard_warning, metadata

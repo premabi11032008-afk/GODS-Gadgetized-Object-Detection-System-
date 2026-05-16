@@ -56,7 +56,9 @@ export default function Dashboard() {
         setHazardData({
           distance: data.distance,
           risk_score: data.risk_score,
-          latest_log: data.latest_log
+          latest_log: data.latest_log,
+          hazard_action: data.hazard_action,
+          hazard: data.hazard
         });
 
         // 🚨 Pothole Reporting Logic 🚨
@@ -105,12 +107,11 @@ export default function Dashboard() {
 
           // Instead of API call, use local warnings for zero latency
           if (!hazardWarning) {
-            const warnings = [
-              "OBJECT IN ROADWAY. BRAKE IMMEDIATELY.",
-              "COLLISION IMMINENT. EVASIVE MANEUVER REQUIRED.",
-              "PROXIMITY ALERT. REDUCE SPEED."
-            ];
-            setHazardWarning(warnings[Math.floor(Math.random() * warnings.length)]);
+            if (data.hazard_action === 'slow_down') {
+              setHazardWarning("ROAD DAMAGE AHEAD. SLOW DOWN.");
+            } else {
+              setHazardWarning("OBJECT IN ROADWAY. HIT THE BRAKE.");
+            }
           }
           setShowHazardPopup(true);
         }
@@ -317,11 +318,13 @@ export default function Dashboard() {
 
             {/* Drive Mode Simple Overlay Warning */}
             {isDriveMode && hazardData.hazard && (
-              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-30 bg-red-600/90 text-white px-8 py-4 rounded-xl backdrop-blur-md border border-red-400 shadow-[0_0_50px_rgba(220,38,38,0.8)] animate-pulse flex items-center gap-4">
+              <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 z-30 ${hazardData.hazard_action === 'slow_down' ? 'bg-yellow-600/90 border-yellow-400 shadow-[0_0_50px_rgba(234,179,8,0.8)]' : 'bg-red-600/90 border-red-400 shadow-[0_0_50px_rgba(220,38,38,0.8)]'} text-white px-8 py-4 rounded-xl backdrop-blur-md border animate-pulse flex items-center gap-4`}>
                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span className="text-2xl font-black tracking-widest uppercase">BRAKE NOW</span>
+                <span className="text-2xl font-black tracking-widest uppercase">
+                  {hazardData.hazard_action === 'slow_down' ? 'SLOW DOWN' : 'HIT THE BRAKE'}
+                </span>
               </div>
             )}
 

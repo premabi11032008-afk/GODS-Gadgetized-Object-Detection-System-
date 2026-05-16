@@ -69,9 +69,10 @@ def draw_detections(frame, detections):
     Draw bounding boxes and labels for the detected objects.
     """
     for det in detections:
-        x1, y1, x2, y2 = det['box']
-        label = f"{det['class']} {det['conf']:.2f}"
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(frame, label, (x1, max(30, y1 - 10)), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        if det["conf"]>=0.6:
+            x1, y1, x2, y2 = det['box']
+            label = f"{det['class']} {det['conf']:.2f}"
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(frame, label, (x1, max(30, y1 - 10)), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     return frame
