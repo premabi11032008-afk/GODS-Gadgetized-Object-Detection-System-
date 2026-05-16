@@ -18,7 +18,7 @@ class Config:
     TARGET_FPS = 10
     DETECTION_INTERVAL = 1 
     FRAME_SIZE = (320, 320)
-    JPEG_QUALITY = 50
+    JPEG_QUALITY = 90
 
     # Driving Safety Globals
     # We use thread-safe ways to access these in a real app, but for now they live here.

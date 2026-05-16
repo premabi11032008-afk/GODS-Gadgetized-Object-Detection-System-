@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import os
 
 def train_model():
-    model = YOLO('yolov8n.pt')
+    model = YOLO('runs/detect/road_damage_v1/weights/last.pt')
 
     # Start training!
     # YOLOv8 automatically uses Early Stopping by default if validation metrics don't improve.
@@ -10,6 +10,7 @@ def train_model():
     print("Starting Training...")
     results = model.train(
         data=r'c:\Users\HAPPY\NEW PROJECTS\DT PROJECTS\DT PROJECT  2\dataset\data.yaml',
+        resume=True,
         epochs=100,           # Maximum number of epochs
         patience=15,          # Early Stopping: Stop if no improvement after 15 epochs
         imgsz=640,            # Image size

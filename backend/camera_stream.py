@@ -45,11 +45,6 @@ def generate_frames():
         return
 
     while True:
-        current_time = time.time()
-        if current_time - last_time < 1 / Config.TARGET_FPS:
-            continue
-        last_time = current_time
-
         success, frame = camera.read()
         if not success or frame is None:
             with frame_lock:
@@ -61,6 +56,11 @@ def generate_frames():
                 }
             time.sleep(0.2)
             continue
+
+        current_time = time.time()
+        if current_time - last_time < 1 / Config.TARGET_FPS:
+            continue
+        last_time = current_time
 
         # 🔄 Rotate if needed
         rotation = Config.camera_rotation
@@ -78,6 +78,9 @@ def generate_frames():
             detections = detect_objects(frame)
             frame, lane_detected = detect_lanes(frame)
             frame, hazard, metadata = check_hazards(frame, detections, lane_detected)
+            
+            # Draw detections for the current frame
+            frame = draw_detections(frame, detections)
 
             # Cache results
             with frame_lock:

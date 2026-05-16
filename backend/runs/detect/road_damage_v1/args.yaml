@@ -1,6 +1,6 @@
 task: detect
 mode: train
-model: yolov8n.pt
+model: runs\detect\road_damage_v1\weights\last.pt
 data: c:\Users\HAPPY\NEW PROJECTS\DT PROJECTS\DT PROJECT  2\dataset\data.yaml
 epochs: 100
 time: null
@@ -11,7 +11,7 @@ save: true
 save_period: -1
 cache: false
 device: cpu
-workers: 8
+workers: 0
 project: null
 name: road_damage_v1
 exist_ok: false
@@ -24,7 +24,7 @@ single_cls: false
 rect: false
 cos_lr: true
 close_mosaic: 10
-resume: false
+resume: runs\detect\road_damage_v1\weights\last.pt
 amp: true
 fraction: 1.0
 profile: false
